@@ -34,12 +34,12 @@ final class Log4jLogger extends Logger {
     }
 
     @Override
-    boolean isEnabled( final Level level ) {
+    boolean isEnabledInternal( final Level level ) {
         return delegate.isEnabledFor( translate( level ) );
     }
 
     @Override
-    void log( final Level level, final Object msg, final Throwable t ) {
+    void logInternal( final Level level, final Object msg, final Throwable t ) {
         if ( t == null ) {
             delegate.log( translate( level ), msg );
         } else {

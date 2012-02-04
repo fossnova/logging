@@ -44,13 +44,6 @@ public class Logger implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Levels used by this logging framework.
-     */
-    enum Level {
-        ERROR, WARN, INFO, DEBUG, TRACE,
-    }
-
-    /**
      * Logger name.
      */
     private final String name;
@@ -80,7 +73,7 @@ public class Logger implements Serializable {
      * @param msg the object to log
      * @param t the exception which was thrown, if any
      */
-    void log( final Level level, final Object msg, final Throwable t ) {
+    void logInternal( final Level level, final Object msg, final Throwable t ) {
         throw new UnsupportedOperationException();
     }
 
@@ -90,7 +83,7 @@ public class Logger implements Serializable {
      * @param level the level
      * @return {@code true} if specified level is currently being logged 
      */
-    boolean isEnabled( final Level level ) {
+    boolean isEnabledInternal( final Level level ) {
         throw new UnsupportedOperationException();
     }
 
@@ -109,6 +102,7 @@ public class Logger implements Serializable {
      * @param name the logger name
      *
      * @return the logger
+     * @throws IllegalArgumentException if parameter is null
      */
     public static final Logger getInstance( final String name ) {
         if ( name == null ) {
@@ -123,6 +117,7 @@ public class Logger implements Serializable {
      * @param clazz to create logger name from
      *
      * @return the logger
+     * @throws IllegalArgumentException if parameter is null
      */
     public static final Logger getInstance( final Class< ? > clazz ) {
         if ( clazz == null ) {
@@ -132,12 +127,25 @@ public class Logger implements Serializable {
     }
 
     /**
+     * Check if a message of the specified level would actually be logged by this logger.
+     *
+     * @return {@code true} if the <code>Level</code> is currently being logged, {@code false} otherwise
+     * @throws IllegalArgumentException if level is null
+     */
+    public final boolean isEnabled( final Level level ) {
+        if ( level == null ) {
+            throw new IllegalArgumentException();
+        }
+        return isEnabledInternal( level );
+    }
+
+    /**
      * Check if a message of the {@code TRACE} level would actually be logged by this logger.
      *
      * @return {@code true} if the {@code TRACE} level is currently being logged
      */
     public final boolean isTraceEnabled() {
-        return isEnabled( Level.TRACE );
+        return isEnabledInternal( Level.TRACE );
     }
 
     /**
@@ -146,7 +154,7 @@ public class Logger implements Serializable {
      * @param msg the message
      */
     public final void trace( final Object msg ) {
-        log( Level.TRACE, msg, null );
+        logInternal( Level.TRACE, msg, null );
     }
 
     /**
@@ -156,7 +164,7 @@ public class Logger implements Serializable {
      * @param t the throwable
      */
     public final void trace( final Object msg, final Throwable t ) {
-        log( Level.TRACE, msg, t );
+        logInternal( Level.TRACE, msg, t );
     }
 
     /**
@@ -165,7 +173,7 @@ public class Logger implements Serializable {
      * @return {@code true} if the {@code DEBUG} level is currently being logged
      */
     public final boolean isDebugEnabled() {
-        return isEnabled( Level.DEBUG );
+        return isEnabledInternal( Level.DEBUG );
     }
 
     /**
@@ -174,7 +182,7 @@ public class Logger implements Serializable {
      * @param msg the message
      */
     public final void debug( final Object msg ) {
-        log( Level.DEBUG, msg, null );
+        logInternal( Level.DEBUG, msg, null );
     }
 
     /**
@@ -184,7 +192,7 @@ public class Logger implements Serializable {
      * @param t the throwable
      */
     public final void debug( final Object msg, final Throwable t ) {
-        log( Level.DEBUG, msg, t );
+        logInternal( Level.DEBUG, msg, t );
     }
 
     /**
@@ -193,7 +201,7 @@ public class Logger implements Serializable {
      * @return {@code true} if the {@code INFO} level is currently being logged
      */
     public final boolean isInfoEnabled() {
-        return isEnabled( Level.INFO );
+        return isEnabledInternal( Level.INFO );
     }
 
     /**
@@ -202,7 +210,7 @@ public class Logger implements Serializable {
      * @param msg the message
      */
     public final void info( final Object msg ) {
-        log( Level.INFO, msg, null );
+        logInternal( Level.INFO, msg, null );
     }
 
     /**
@@ -212,7 +220,7 @@ public class Logger implements Serializable {
      * @param t the throwable
      */
     public final void info( final Object msg, final Throwable t ) {
-        log( Level.INFO, msg, t );
+        logInternal( Level.INFO, msg, t );
     }
 
     /**
@@ -221,7 +229,7 @@ public class Logger implements Serializable {
      * @return {@code true} if the {@code WARNING} level is currently being logged
      */
     public final boolean isWarnEnabled() {
-        return isEnabled( Level.WARN );
+        return isEnabledInternal( Level.WARN );
     }
 
     /**
@@ -230,7 +238,7 @@ public class Logger implements Serializable {
      * @param msg the message
      */
     public final void warn( final Object msg ) {
-        log( Level.WARN, msg, null );
+        logInternal( Level.WARN, msg, null );
     }
 
     /**
@@ -240,7 +248,7 @@ public class Logger implements Serializable {
      * @param t the throwable
      */
     public final void warn( final Object msg, final Throwable t ) {
-        log( Level.WARN, msg, t );
+        logInternal( Level.WARN, msg, t );
     }
 
     /**
@@ -249,7 +257,7 @@ public class Logger implements Serializable {
      * @return {@code true} if the {@code ERROR} level is currently being logged
      */
     public final boolean isErrorEnabled() {
-        return isEnabled( Level.ERROR );
+        return isEnabledInternal( Level.ERROR );
     }
 
     /**
@@ -258,7 +266,7 @@ public class Logger implements Serializable {
      * @param msg the message
      */
     public final void error( final Object msg ) {
-        log( Level.ERROR, msg, null );
+        logInternal( Level.ERROR, msg, null );
     }
 
     /**
@@ -268,6 +276,34 @@ public class Logger implements Serializable {
      * @param t the throwable
      */
     public final void error( final Object msg, final Throwable t ) {
-        log( Level.ERROR, msg, t );
+        logInternal( Level.ERROR, msg, t );
+    }
+
+    /**
+     * Log a message at specified <code>Level</code>.
+     *
+     * @param level debugging level
+     * @param msg the message
+     * @throws IllegalArgumentExceptoin if level is null.
+     */
+    public final void log( final Level level, final Object msg ) {
+        if ( level == null ) {
+            throw new IllegalArgumentException();
+        }
+        logInternal( level, msg, null );
+    }
+
+    /**
+     * Log a message with associated throwable information at specified <code>Level</code>.
+     *
+     * @param msg the message
+     * @param t the throwable
+     * @throws IllegalArgumentExceptoin if level is null.
+     */
+    public final void log( final Level level, final Object msg, final Throwable t ) {
+        if ( level == null ) {
+            throw new IllegalArgumentException();
+        }
+        logInternal( level, msg, t );
     }
 }
