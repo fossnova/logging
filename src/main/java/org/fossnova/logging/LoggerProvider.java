@@ -32,7 +32,7 @@ final class LoggerProvider {
     private static LoggerFactory init() {
         try {
             final ClassLoader loader = Logger.class.getClassLoader();
-            Class.forName( "org.apache.log4j.Hierarchy", true, loader );
+            Class.forName( "org.apache.log4j.Logger", true, loader );
             return new Log4jLoggerFactory();
         } catch ( final Exception ignore ) {
             return new JdkLoggerFactory();
